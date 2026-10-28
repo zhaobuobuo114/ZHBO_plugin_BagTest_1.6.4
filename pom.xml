@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>bagtest</groupId>
+    <artifactId>bagtest</artifactId>
+    <version>1.6.4</version>
+    <packaging>jar</packaging>
+
+    <name>ZHBO_plugin_BagTest_1.6.4</name>
+    <description>【ZHBO】plugin_BagTest_1.6.4 | 1.12.2 个人仓库插件 (YAML/MySQL 双存储, 热重载) | 作者: zhaobuobuo | 联系: 1071576270@QQ.COM</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
+    <repositories>
+        <!-- Aikar 聚合仓库（国内可直连，代理 Spigot 官方快照仓库） -->
+        <repository>
+            <id>aikar</id>
+            <url>https://repo.aikar.co/content/groups/aikar/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.12.2-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>【ZHBO】plugin_BagTest_1.6.4</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+        <resources>
+            <!-- 开启资源过滤，plugin.yml 可读取 pom 版本号 -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+</project>

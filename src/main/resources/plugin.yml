@@ -1,0 +1,24 @@
+# ============================================================
+#  【ZHBO】plugin_BagTest_1.6.4 个人仓库插件 - 插件描述文件
+#  主指令: /bag  |  目标版本: Spigot/Bukkit 1.12.2 (Java 8)
+#  作者: zhaobuobuo  |  联系方式: 1071576270@QQ.COM
+# ============================================================
+name: ZHBO_plugin_BagTest_1.6.4
+version: '${project.version}'
+main: bagtest.BagPlugin
+authors: [zhaobuobuo]
+description: "【ZHBO】plugin_BagTest_1.6.4 | 1.12.2 个人仓库插件 - 多页仓库 / VIP权限组 / 拓展器解锁页 / 开锁器 / 体验券 / YAML+MySQL / 热重载 | 作者: zhaobuobuo | 联系: 1071576270@QQ.COM"
+website: "mailto:1071576270@QQ.COM"
+
+commands:
+  bag:
+    description: 个人仓库主指令
+    usage: /bag help
+
+permissions:
+  bagtest.use:
+    description: 允许使用个人仓库基础功能
+    default: true
+  bagtest.admin:
+    description: 允许使用仓库管理功能(重载/保存/查看他人仓库)
+    default: op

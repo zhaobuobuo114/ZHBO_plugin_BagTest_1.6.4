@@ -1,0 +1,365 @@
+# ============================================================
+#  【ZHBO】plugin_BagTest_1.6.4 个人仓库插件 配置文件 v2 (多页仓库 + 权限组)
+#  作者: zhaobuobuo  |  联系方式: 1071576270@QQ.COM
+#  所有配置均支持 /bag reload 热重载 (或开启自动检测热重载)
+# ============================================================
+
+# ---------------- 存储设置 ----------------
+storage:
+  # 存储方式: YAML (本地文件) 或 MYSQL (数据库)
+  type: YAML
+
+  # YAML 存储设置
+  yaml:
+    # 玩家数据文件保存目录 (相对插件数据文件夹, 每位玩家一个 .yml 文件)
+    data-folder: playerdata
+
+  # MySQL 存储设置 (type 为 MYSQL 时生效)
+  mysql:
+    host: localhost
+    port: 3306
+    database: minecraft
+    username: root
+    password: "123456"
+    # 数据表前缀 (实际表名 = 前缀 + player)
+    table-prefix: bag_
+    # 是否启用 SSL 连接
+    use-ssl: false
+
+# ---------------- 权限组设置 (多页仓库核心) ----------------
+# 每个权限组定义: 页数上限 / 每页行数 / 每页标题, 组名与数量完全自定义
+#
+# 页数模型 (v1.4.0): VIP 只提供"解锁权力", 页面需用仓库拓展器逐页解锁!
+#   已解锁页数 = 基础 1 页 + 已用拓展器数量 (每个拓展器解锁一页)
+#   页数上限   = 所在 VIP 组的 pages 值 (拓展器最多能解锁到这个数)
+#   例: vip2 玩家上限 6 页, 默认只解锁第 1 页, 用 5 个拓展器才能开满
+#
+# 判定规则 (优先级从高到低):
+#   1. 指令绑定: OP 执行 /bag vip <玩家> <编号> 直接设置 (存于 groups.yml);
+#      例: /bag vip Steve 1 = 设为 vip1 组, /bag vip Steve svip = 设为 svip 组,
+#          /bag vip Steve remove = 移除绑定
+#   2. 权限节点: 玩家拥有组权限节点时自动生效 (如 LuckPerms 授予 bagtest.vip1);
+#   3. 兜底: 两者都没有时使用 default 组。
+#   玩家拥有多个组权限时自动取"页数最多"的组; 绑定优先于权限节点。
+#
+# 数据保护: 玩家降级后, 超出页数的数据不会删除 (保留在存档中, 升级后恢复)。
+#
+# 每组可配置字段:
+#   permission  权限节点 (default 组不需要)
+#   pages       页数上限 (1-100, VIP 可解锁的最大页数)
+#   rows        每页行数 (1-6, 每页格数 = 行数 x 9)
+#   title       统一标题模板: 所有页共用, {page}=页码 {player}=玩家名
+#   titles      逐页标题: 按页码单独定义, 优先级高于 title 模板
+#               (两种方式二选一即可, 同时配置时逐页定义优先)
+groups:
+  # 默认组: 所有玩家的保底配置 (仅基础 1 页, 拓展器无法超越)
+  default:
+    pages: 1
+    rows: 6
+    titles:
+      1: "&8&l✦ 我的仓库"
+
+  # VIP1 组: 页数上限 3 页 (指令: /bag vip <玩家> 1)
+  vip1:
+    permission: "bagtest.vip1"
+    pages: 3
+    rows: 6
+    title: "&6&l✦ VIP1仓库 &7- &e第{page}页"
+
+  # VIP2 组: 页数上限 6 页 (指令: /bag vip <玩家> 2)
+  vip2:
+    permission: "bagtest.vip2"
+    pages: 6
+    rows: 6
+    title: "&6&l✦ VIP2仓库 &7- &e第{page}页"
+
+  # SVIP 组: 页数上限 10 页 (指令: /bag vip <玩家> svip)
+  svip:
+    permission: "bagtest.svip"
+    pages: 10
+    rows: 6
+    title: "&b&l✦ SVIP仓库 &7- &e第{page}页"
+
+# ---------------- 仓库通用设置 ----------------
+bag:
+  # 打开仓库的指令冷却秒数 (0 = 不限制)
+  open-cooldown: 0
+  # 仓库总页数硬上限 (权限组页数 + 拓展器页数之和不能超过此值)
+  max-pages: 20
+
+# ---------------- 锁定格设置 (v1.3.0) ----------------
+# 每个仓库页都有锁定格子: 默认位置为界面上下两半的下半部分 (自动避开两端翻页按钮)
+# 玩家手持开锁器点击锁定格即可解锁, 每个开锁器只能解锁一个格子
+locked-slots:
+  enabled: true
+  # 位置模式:
+  #   BOTTOM_HALF = 界面上下两半的下半部分 (推荐, 自动避开两端翻页按钮格)
+  #   CUSTOM      = 手动指定槽位 (配合下方 slots 列表)
+  mode: BOTTOM_HALF
+  # mode 为 CUSTOM 时生效: 槽位列表 (0 起算; 最后一行两端是翻页按钮, 请勿占用)
+  slots: [46, 47, 48, 49, 50, 51, 52]
+  # 锁定格显示的物品 (material 为 1.12.2 材质名, data 为染色/子ID)
+  material: STAINED_GLASS_PANE
+  data: 14
+  # 锁定格名称与描述 (支持 & 颜色代码)
+  name: "&c🔒 锁定格子"
+  lore:
+    - "&7手持开锁器点击此格解锁"
+    - "&8每个开锁器仅能解锁一个格子"
+
+# ---------------- 开锁器 / 拓展器 (v1.3.0, v1.4.0 改右键消耗, v1.5.0 绑定+来源) ----------------
+items:
+  # 开锁器: 手持右键自动消耗一个, 解锁一个锁定格 (材质建议用铁锭等不可交互物品)
+  # 也可在打开仓库界面后, 手持开锁器直接点击锁定格解锁
+  # 插件按 材质+名称+描述 精确比对识别 (附魔/绑定行/来源行不参与比对)
+  unlocker:
+    material: IRON_INGOT
+    data: 0
+    # 附魔光效 (发光), 视觉上与普通物品区分; 比对时忽略附魔
+    enchanted: true
+    # v1.6.1: 开锁器不绑定玩家, 可自由交易/转移使用
+    bind-owner: false
+    name: "&e🔑 仓库开锁器"
+    lore:
+      - "&7手持右键自动消耗"
+      - "&8可解锁一个锁定格子"
+    # give 时自动在 lore 末尾追加来源行 (无需配置):
+    #   "&8来源: <发放者> <时间>"  来源日志, 消耗时写入 itemlog.txt
+  # 拓展器: 手持右键消耗一个, 开启一个新的仓库页 (需在 VIP 权限上限内)
+  # 不可丢弃/不可被熔炉烧/不可被漏斗转移, 死亡保留
+  expander:
+    material: EMERALD
+    data: 0
+    enchanted: true
+    # v1.6.1: 拓展器是唯一绑定玩家的特殊物品 (限量道具防转移),
+    # give 时自动绑定领取者, 其他玩家右键无效且不消耗
+    bind-owner: true
+    name: "&a📦 仓库拓展器"
+    lore:
+      - "&7手持右键消耗"
+      - "&8开启一个新的仓库页"
+      - "&c⚠ 请妥善保管, 丢失概不负责"
+    # 每位玩家累计最多可获得的拓展器数量 (v1.6.0), 0 = 不限量
+    # 计数为累计获得 (消耗不减), 超过后 give 自动截断/拒绝
+    gain-limit: 10
+
+  # 仓库体验券 (v1.6.0): 手持右键消耗, 暂时体验"比基础组高一级"的权限组
+  #   普通玩家 -> vip1, vip1 -> vip2, vip2 -> svip (按权限组页数升序取上一级)
+  #   体验期间: 该组全部仓库页默认解锁 + 锁定格临时全解锁 + 标题显示剩余时间
+  #   体验中再使用: 叠加时间, 不重复升级; 到期后回退原组,
+  #   超出原权限的页只能取不能存, 取空后无法再打开
+  # v1.6.2 动态规则: 体验组实时按"基础组的上一级"解析, 基础组中途升/降级
+  #   体验自动跟随调整, 永不失效 (修复: 基础组>=体验组时倒计时消失/物品被锁)
+  # v1.6.1: 体验券不绑定玩家, 可自由交易
+  ticket3:
+    material: PAPER
+    data: 0
+    enchanted: true
+    bind-owner: false
+    # 体验时长 (天)
+    days: 3
+    name: "&b🎟 仓库体验券 &7(3天)"
+    lore:
+      - "&7手持右键消耗"
+      - "&8暂时升级到下一权限组"
+      - "&8解锁全部格子与权限内仓库页"
+      - "&c⚠ 请妥善保管, 丢失概不负责"
+  ticket7:
+    material: PAPER
+    data: 0
+    enchanted: true
+    bind-owner: false
+    days: 7
+    name: "&d🎟 仓库体验券 &7(7天)"
+    lore:
+      - "&7手持右键消耗"
+      - "&8暂时升级到下一权限组"
+      - "&8解锁全部格子与权限内仓库页"
+      - "&c⚠ 请妥善保管, 丢失概不负责"
+
+# ---------------- 音效 / 粒子特效 (v1.5.0) ----------------
+# 音效格式: "音效名;音量;音调"  音效名为 1.12.2 Sound 枚举名 (如 BLOCK_CHEST_OPEN)
+# 粒子格式: "粒子名;数量;偏移X;偏移Y;偏移Z;速度"  粒子名为 1.12.2 Particle 枚举名
+# 留空 "" 即关闭该场景特效; 配置错误自动跳过并后台警告, 不影响运行
+effects:
+  sounds:
+    enabled: true
+    # 打开仓库界面
+    open: "BLOCK_CHEST_OPEN;1.0;1.0"
+    # 翻页 (上一页/下一页按钮)
+    page-turn: "ITEM_BOOK_PAGE_TURN;1.0;1.2"
+    # 开锁成功 (右键 / 界面内点击锁定格)
+    unlock: "ENTITY_PLAYER_LEVELUP;1.0;1.5"
+    # 拓展器开新页成功
+    expand: "ITEM_TOTEM_USE;1.0;1.0"
+    # 操作失败 (页码无效/权限不足/开锁器不匹配/无锁定格等)
+    fail: "ENTITY_VILLAGER_NO;1.0;0.8"
+    # 体验券使用成功 (v1.6.0)
+    ticket: "ENTITY_ELDER_GUARDIAN_CURSE;1.0;1.5"
+  particles:
+    enabled: true
+    # 开锁成功的粒子 (TOTEM=图腾绿色粒子, 氪金仪式感)
+    unlock: "TOTEM;40;0.5;0.9;0.5;0.2"
+    # 拓展器开新页的粒子
+    expand: "FIREWORKS_SPARK;50;0.5;1.0;0.5;0.05"
+    # 体验券使用的粒子 (v1.6.0)
+    ticket: "SPELL_WITCH;50;0.5;1.0;0.5;0.1"
+
+# ---------------- 界面翻页按钮设置 (v1.2.0) ----------------
+# 仓库界面最后一行两端的翻页格子 (左=上一页, 右=下一页)
+# 下一页未解锁时显示屏障方块, 悬停提示"未解锁"
+gui:
+  # 可用状态的翻页按钮 (箭头物品)
+  prev-name: "&e◀ 上一页"
+  prev-lore: "&7点击翻到第 {page} 页"
+  next-name: "&e下一页 ▶"
+  next-lore: "&7点击翻到第 {page} 页"
+  # 未解锁的下一页 (屏障方块): 权限足够但需拓展器解锁时显示
+  locked-name: "&c未解锁"
+  locked-lore: "&7手持 &e仓库拓展器 &7右键解锁"
+  # 超出 VIP 权限上限的下一页 (屏障方块, {group} = 需要的组名)
+  vip-locked-name: "&c权限不足"
+  vip-locked-lore: "&7该页需要 &e{group} &7组权限"
+  # 已到边界 (屏障方块)
+  first-name: "&c已是第一页"
+  first-lore: "&7没有更前面的页了"
+  last-name: "&c已是最后一页"
+  last-lore: "&7没有更后面的页了"
+
+# ---------------- 选项菜单设置 ----------------
+# 输入 /bag 后聊天栏显示的菜单 (全部支持 & 颜色代码)
+menu:
+  # 菜单标题行
+  title: "&7===== &6个人仓库 选项菜单 &7====="
+  # 页码按钮区 (动态生成玩家权限组对应的全部页, 点击直接打开该页)
+  pages-label: "&7我的仓库页: "
+  # 页码按钮样式 ({page} = 页码)
+  page-button: "&e[&6{page}&e]"
+  # 菜单底部提示行
+  hint: "&7提示: &8点击上方选项即可执行"
+  # 固定条目列表 (顺序即显示顺序, 可增删)
+  #   text:    显示文本
+  #   command: 点击执行的指令 (留空或省略则该行不可点击)
+  #   suggest: true=点击把指令填入聊天框(适合需补参数的指令), false=点击直接执行
+  #   admin:   true=仅 OP/bagtest.admin 权限者可见 (普通玩家看不到)
+  entries:
+    - text: "&e/bag open [页码] &7- 打开自己的仓库"
+      command: "/bag open "
+      suggest: true
+    - text: "&e/bag help &7- 显示本菜单"
+      command: "/bag help"
+      suggest: false
+    - text: "&e/bag vip <玩家> <编号> &7- 设置玩家VIP组 (如 /bag vip Steve 1)"
+      command: "/bag vip "
+      suggest: true
+      admin: true
+    - text: "&e/bag vip <玩家> remove &7- 移除玩家VIP绑定"
+      command: "/bag vip "
+      suggest: true
+      admin: true
+    - text: "&e/bag give <玩家> <开锁器|拓展器> [数量] &7- 给予特殊物品"
+      command: "/bag give "
+      suggest: true
+      admin: true
+    - text: "&e/bag group list &7- 查看全部权限组与页数"
+      command: "/bag group list"
+      suggest: false
+      admin: true
+    - text: "&e/bag info &7- 查看插件运行信息"
+      command: "/bag info"
+      suggest: false
+      admin: true
+    - text: "&e/bag open <玩家> [页码] &7- 打开指定玩家的仓库"
+      command: "/bag open "
+      suggest: true
+      admin: true
+    - text: "&e/bag reload &7- 手动热重载配置文件"
+      command: "/bag reload"
+      suggest: false
+      admin: true
+    - text: "&e/bag save &7- 保存全部在线玩家数据"
+      command: "/bag save"
+      suggest: false
+      admin: true
+    # 作者与联系方式 (无 command, 不可点击, 仅展示)
+    - text: "&7作者: &ezhaobuobuo &7| 联系: &e1071576270@QQ.COM"
+
+# ---------------- 功能开关 ----------------
+settings:
+  # 全部在线玩家数据自动保存间隔 (分钟, 0 = 关闭)
+  auto-save-minutes: 10
+  # 是否启用配置文件自动热重载 (检测到本文件变更后自动生效, 无需重启)
+  auto-reload: true
+  # 配置文件变更检测间隔 (秒)
+  check-interval-seconds: 5
+
+# ---------------- 消息设置 ----------------
+# 支持 & 颜色代码; {player}=玩家名 {page}=页码 {max}=最大页 {seconds}=秒数
+# {time}=耗时 {count}=数量 {group}=权限组名 {rows}=行数 {pages}=页数
+# {groups}=全部组名 {source}=组来源 {perm}=权限节点
+messages:
+  prefix: "&6[仓库]&r "
+  no-permission: "&c你没有权限执行该操作!"
+  player-only: "&c该指令只能由玩家执行!"
+  player-not-found: "&c目标玩家 &e{player} &c不存在或从未进过服务器!"
+  not-loaded: "&c仓库数据尚未加载完成, 请稍后再试!"
+  loading: "&7正在加载玩家 &e{player} &7的仓库数据..."
+  cooldown: "&c操作过于频繁, 请 &e{seconds} &c秒后再试!"
+  page-invalid: "&c页码 &e{page} &c无效! 你已解锁的范围: &e1-{max} &c页"
+  # VIP 权力提示: 页码超出自己组的页数上限时显示 (VIP 只是解锁权力, 解锁还需拓展器)
+  page-locked: "&c第 &e{page} &c页需要 &e{group} &c组权限 (上限 &e{pages} &c页), 你当前解锁到第 &e{max} &c页"
+  opened: "&7已打开仓库 &e第{page}页&7."
+  opened-other: "&7已打开玩家 &e{player} &7的仓库 &e第{page}页&7."
+  reloaded: "&a配置文件已重载! 耗时 &e{time}ms&a, 当前存储: &e{storage}&a."
+  storage-switched: "&e检测到存储配置变更: {old} -> {new}, 已保存全部数据并切换 (数据不会自动迁移, 请自行导入)!"
+  saved: "&a已保存 &e{count} &a名玩家的仓库数据."
+  # ---- 分组管理消息 (v1.1.0) ----
+  group-not-found: "&c权限组 &e{group} &c不存在! 可用组: &e{groups}"
+  group-bound: "&a已将玩家 &e{player} &a设为 &e{group} &a组 (&e{pages} 页 x &e{rows} 行&a)"
+  group-unbound: "&a已移除玩家 &e{player} &a的自定义分组, 恢复权限判定 (当前: &e{group}&a)"
+  group-not-bound: "&e{player} &7没有自定义分组绑定."
+  group-info: "&7玩家 &e{player} &7当前生效组: &e{group} &7(&e{pages} 页 x &e{rows} 行&7) &8来源: {source}"
+  group-list-header: "&7===== &6权限组列表 &7(&e{count}&7) ====="
+  group-list-item: "&e{group} &7- &e{pages} 页 x &e{rows} 行 &8({perm})"
+  # ---- 锁定格 / 特殊物品消息 (v1.3.0, v1.4.0 更新) ----
+  slot-locked-hint: "&c该格子已锁定! 手持 &e仓库开锁器 &c右键或点击此格解锁."
+  slot-unlocked: "&a开锁成功! 已解锁一个锁定格子."
+  unlocker-used: "&a开锁成功! 已解锁 &e第{page}页 &a的一个锁定格子."
+  unlocker-none: "&c没有可解锁的锁定格子了, 开锁器未消耗."
+  # 开锁器绑定校验失败 (v1.5.0): {player} = 绑定的玩家名 (v1.6.1 起仅拓展器使用)
+  unlocker-not-owner: "&c该物品绑定于玩家 &e{player} &c, 你无法使用!"
+  expander-used: "&a仓库拓展成功! 已开启新的仓库页: &e第{page}页&a."
+  expander-max: "&c已达你的 VIP 页数上限 &e{max} &c页, 拓展器未消耗."
+  page-need-expander: "&c第 &e{page} &c页尚未解锁! 手持 &e仓库拓展器 &c右键即可开启."
+  # ---- 特殊物品防护消息 (v1.5.0) ----
+  # 丢弃开锁器/拓展器被拦截
+  item-cant-drop: "&c仓库特殊物品 &e(开锁器/拓展器/体验券) &c不可丢弃!"
+  # 死亡后特殊物品保留并随重生归还
+  item-death-kept: "&e你的开锁器/拓展器/体验券已绑定保留, 重生时自动归还."
+  # ---- 体验券消息 (v1.6.0, v1.6.1 叠加时间) ----
+  # 首次使用成功: {group}=体验组名 {time}=时长描述 (如 3天)
+  ticket-used: "&a体验券已生效! 你暂时拥有 &e{group} &a权限, 剩余 &e{time}&a."
+  # 体验激活中再使用: 叠加时间, 体验组不变 (v1.6.1)
+  ticket-extend: "&a体验时间已叠加! 当前体验 &e{group}&a, 剩余 &e{time}&a."
+  # 已是最高权限组, 体验券无法再升级 (不消耗)
+  ticket-max: "&c你当前已是最高权限组 &e{group}&c, 体验券未消耗."
+  # 体验券到期提示 (打开仓库时若已过期)
+  ticket-expired: "&e你的仓库体验券已到期, 已回退至 &e{group} &e权限."
+  # 超限只读页提示 (体验到期后打开超出原权限但有物品的页)
+  ticket-readonly-page: "&e该页超出当前权限, 已进入只读模式: &c只能取物, 不能存放&7(取空后无法再打开)."
+  # 只读页尝试存入被拦截
+  ticket-readonly-deny: "&c该页为只读页, 只能取出物品, 不能存放!"
+  # 只读页物品取空自动关闭
+  ticket-page-empty: "&e该页物品已全部取回, 页面已关闭, 之后将无法再打开."
+  # 界面标题后缀: {group}=体验组名 {time}=剩余时间 (最小单位分钟, 如 2天23时21分)
+  ticket-title-suffix: " &b{group}剩余: &f{time}"
+  # /bag info 中显示的体验状态行
+  ticket-info-line: "&7体验权限: &e{group} &7剩余 &e{time}"
+  # 拓展器获得上限提示: {limit}=上限 {current}=已获得
+  expander-gain-limit: "&c玩家 &e{player} &c拓展器获得数已达上限 &e{limit}&c (已获得 &e{current}&c), 本次无法发放."
+  expander-gain-truncated: "&e拓展器获得数接近上限, 本次实际发放 &e{amount} &e个 (已获得 {current}/{limit})."
+  give-usage: "&c用法: /bag give <玩家> <unlocker|expander|ticket3|ticket7> [数量] &8(支持中文: 开锁器/拓展器/体验券3天/体验券7天)"
+  give-invalid-type: "&c未知物品类型: &e{type}&c! 可用: &eunlocker&c(开锁器) / &eexpander&c(拓展器) / &eticket3&c(体验券3天) / &eticket7&c(体验券7天)"
+  give-player-offline: "&c玩家 &e{player} &c不在线!"
+  give-success: "&a已给予 &e{player} &e{amount} &a个 &r{item}&a."
+  give-received: "&a你获得了 &e{amount} &a个 &r{item} &7— 手持右键使用"
